@@ -13,7 +13,7 @@ v3.1.0 adds explicit units to column names and reports classification
 columns as percentages rather than fractions; v1.3.0 only has the older
 16-feature schema, no image-quality/shape-descriptor columns at all).
 
-This script is NOT part of the main cpi-thermo pipeline -- these CSVs are
+This script is NOT part of the main ICE-T pipeline -- these CSVs are
 an external, unjoined data source (not currently merged into
 combined_env_data*.parquet). It exists purely to answer: for campaigns with
 more than one derived-feature version available, how much do the marginal

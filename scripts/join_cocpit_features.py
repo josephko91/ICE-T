@@ -9,7 +9,7 @@ established between `cpi_filename` (this pipeline) and COCPIT's own
 `filename` column -- both are the same underlying CPI-archive naming
 convention (see `parsers/cpi_timestamps.py`).
 
-This is NOT part of the main cpi-thermo pipeline: like the other COCPIT-
+This is NOT part of the main ICE-T pipeline: like the other COCPIT-
 reading scripts (`derive_particle_size_microns.py`,
 `compare_derived_feature_versions.py`, ...), it depends on an external,
 non-portable path (`/Users/josephko/research/cocpit/final_databases/vgg16`)

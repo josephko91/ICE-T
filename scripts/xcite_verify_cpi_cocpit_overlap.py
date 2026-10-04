@@ -3,7 +3,7 @@
 Verify overlap between raw CPI image files and COCPIT derived-feature rows
 =============================================================================
 Standalone script for xcite (HPC cluster) -- no dependency on the
-cpi-thermo repo, only pandas (stdlib otherwise). For each campaign,
+ICE-T repo, only pandas (stdlib otherwise). For each campaign,
 compares the set of raw single-particle image filenames on disk against
 the `filename` column of that campaign's COCPIT v1.4.0 derived-feature
 CSV, and reports:
@@ -12,7 +12,7 @@ CSV, and reports:
   - overlap counts/percentages in both directions
 
 This answers, independent of any env-data join: does COCPIT's own
-processing coverage gap (found in cpi-thermo's
+processing coverage gap (found in ICE-T's
 docs/reports/2026-08-29-cocpit-particle-feature-join.md -- e.g. MACPEX at
 2.8% coverage, ARM at 8.6%) come from COCPIT simply never having processed
 most of a campaign's raw images, or from some other mismatch (e.g.

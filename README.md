@@ -1,4 +1,4 @@
-# CPI-Thermo: Cloud particle imagery with thermodynamics
+# ICE-T: Integrated Ice Crystal Embeddings and Thermodynamics
 
 Combines atmospheric aircraft campaign data from 15 field campaigns into a
 single dataset for thermodynamic analysis — ice supersaturation (Si), water
@@ -33,8 +33,8 @@ ICE-L, ISDAC, MACPEX, MC3E, MIDCIX, MPACE, OLYMPEX, POSIDON
 
 1. **Clone the repository:**
    ```
-   git clone https://github.com/josephko91/cpi-thermo.git
-   cd cpi-thermo
+   git clone https://github.com/josephko91/ICE-T.git
+   cd ICE-T
    ```
 2. **Install dependencies** (exact versions this pipeline was validated against — see `requirements.txt`):
    ```

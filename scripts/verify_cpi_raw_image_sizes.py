@@ -99,7 +99,7 @@ RAW_IMG_DATA_DIR = ROOT / "data" / "raw" / "CRYSTAL-FACE-NASA" / "CPI_raw_images
 GALLERY_BASE_URL = "https://espoarchive.nasa.gov/archive/gallery/1637"
 DOWNLOAD_BASE_URL = "https://espoarchive.nasa.gov/archive/download"
 CRAWL_DELAY_SEC = 10.0  # espoarchive.nasa.gov/robots.txt: Crawl-delay: 10
-USER_AGENT = "Mozilla/5.0 (research; cpi-thermo verification script)"
+USER_AGENT = "Mozilla/5.0 (research; ICE-T verification script)"
 
 FLIGHT_DATES = ["20020709", "20020711", "20020716", "20020719",
                  "20020721", "20020723", "20020728", "20020729"]

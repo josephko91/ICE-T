@@ -4,7 +4,7 @@ Verify overlap between raw CPI image files (single_imgs_v1.4.0) and COCPIT
 v3.1.0 derived-feature rows
 =============================================================================
 Standalone script for xcite (HPC cluster) -- no dependency on the
-cpi-thermo repo, only pandas (stdlib otherwise). Variant of
+ICE-T repo, only pandas (stdlib otherwise). Variant of
 xcite_verify_cpi_cocpit_overlap.py that checks the SAME raw
 single_imgs_v1.4.0 image directories against the v3.1.0 derived-feature
 CSVs instead of v1.4.0's.

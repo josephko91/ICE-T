@@ -6,7 +6,7 @@ Produces physical-unit (micron) particle-size columns for every campaign in
 the COCPIT vgg16 derived-feature CSVs
 (/Users/josephko/research/cocpit/final_databases/vgg16/<version>/<CAMPAIGN>.csv),
 using only information already present in those CSVs. Not part of the main
-cpi-thermo pipeline -- an external, unjoined data source.
+ICE-T pipeline -- an external, unjoined data source.
 
 Two size fields, from two different sources in the raw data:
 

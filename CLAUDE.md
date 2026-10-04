@@ -1,4 +1,4 @@
-# CPI Thermo — Claude Code Context
+# ICE-T (Integrated Ice Crystal Embeddings and Thermodynamics) — Claude Code Context
 
 ## What this project does
 

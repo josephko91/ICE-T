@@ -84,7 +84,7 @@ def variable_stats(df):
 
 def main():
     print(f"\n{'='*70}")
-    print(f"  CPI-THERMO Full Diagnostic  —  {date.today()}")
+    print(f"  ICE-T Full Diagnostic  —  {date.today()}")
     print(f"{'='*70}\n")
 
     print(f"Loading {PARQUET} …")
