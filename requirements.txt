@@ -1,12 +1,16 @@
 # Requirements for campaign data parsing + downstream analysis scripts
 # Install with: pip install -r requirements.txt
+#
+# Pinned to the exact versions the L0-L2 (+ COCPIT) datasets were built and
+# validated against for the beta release. Pipeline output is only guaranteed
+# reproducible against these versions.
 
-numpy>=1.24.0
-pandas>=1.5.0
-xarray>=2023.0.0
-PyYAML>=6.0
+numpy==2.4.3
+pandas==3.0.2
+xarray==2026.4.0
+PyYAML==6.0.3
 
 # scripts/analyze_embedding_multivariate.py (PLS/CCA/RF/UMAP/SHAP)
-scikit-learn>=1.3.0
-umap-learn>=0.5.5
-shap>=0.44.0
+scikit-learn==1.9.0
+umap-learn==0.5.12
+shap==0.52.0
