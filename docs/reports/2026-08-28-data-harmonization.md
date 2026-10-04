@@ -127,7 +127,7 @@ collisions.
 Three tiers, built by `main.py` (L0) and `scripts/build_data_tiers.py`
 (L1, L2):
 
-**L0** (`data/out/combined_env_data.parquet`): every whole second where
+**L0** (`data/out/combined_env_data_L0.parquet`): every whole second where
 *any* instrument in a campaign reported *anything* — the union of every
 instrument's timestamps within that campaign, produced directly by each
 parser's internal outer merges, then `pd.concat`-ed across all 15

@@ -48,7 +48,7 @@ def _parse_args() -> argparse.Namespace:
     ts = _run_timestamp()
     p = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("--l0", type=Path, default=ROOT / "data" / "out" / "combined_env_data.parquet")
+    p.add_argument("--l0", type=Path, default=ROOT / "data" / "out" / "combined_env_data_L0.parquet")
     p.add_argument("--l1", type=Path, default=ROOT / "data" / "out" / "combined_env_data_L1.parquet")
     p.add_argument("--l2", type=Path, default=ROOT / "data" / "out" / "combined_env_data_L2.parquet")
     p.add_argument("--out", type=Path,

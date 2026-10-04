@@ -5,7 +5,7 @@
 Combines atmospheric aircraft campaign data (15 campaigns) into a single parquet for
 thermodynamic analysis — primarily ice supersaturation (Si), water vapor (qv), and
 temperature vs altitude. Parsers normalize each campaign's raw format to a standard
-column schema; `main.py` runs all parsers and writes `data/out/combined_env_data.parquet`
+column schema; `main.py` runs all parsers and writes `data/out/combined_env_data_L0.parquet`
 (the **L0** tier — see "Data tiers" below).
 
 Every cross-instrument merge in every parser is an **exact-second join, never a merge
@@ -21,7 +21,7 @@ fabricating time resolution the data didn't have).
 
 | Tier | File | Definition |
 |------|------|------------|
-| L0 | `data/out/combined_env_data.parquet` | Every whole second where *any* instrument in a campaign reported *anything* (union of all instrument timestamps) |
+| L0 | `data/out/combined_env_data_L0.parquet` | Every whole second where *any* instrument in a campaign reported *anything* (union of all instrument timestamps) |
 | L1 | `data/out/combined_env_data_L1.parquet` | One row per CPI particle image, joined to its exact-second L0 env record (`cpi_filename` column identifies the source image; multiple images sharing a second each get their own row with duplicated env data) |
 | L2 | `data/out/combined_env_data_L2.parquet` | L1 filtered to rows with every core variable present (`Tair_C, P_hPa, Si, qv, Lat, Lon, Alt_m`) |
 
@@ -37,7 +37,7 @@ joined per campaign to avoid cross-campaign timestamp collisions).
 | `parsers/<campaign>.py` | One parser per campaign; each has `load_*()` + `extract_*_standard()` |
 | `parsers/utils.py` | Thermodynamic utilities (`es_ice_hPa`, `es_liq_hPa`, `qv_from_e_P`, `si_from_frost_point`) plus the shared `round_timestamp_to_second` merge-key helper |
 | `scripts/qa_checks.py` | 9 QC check functions; writes CSVs to `logs/qaqc/<timestamp>/` |
-| `data/out/combined_env_data.parquet` | L0 output (gitignored) |
+| `data/out/combined_env_data_L0.parquet` | L0 output (gitignored) |
 | `data/out/combined_env_data_L1.parquet` / `_L2.parquet` | L1/L2 outputs (gitignored) — see "Data tiers" |
 | `scripts/build_data_tiers.py` | Builds the L1/L2 parquets from L0; writes `logs/build_data_tiers/<timestamp>/tier_summary.csv` |
 | `parsers/cpi_timestamps.py` | Canonical loader for `data/raw/cpi_embeddings_timestamps.csv` (CPI particle-image timestamps); normalizes campaign names and known UTC-offset bugs (e.g. MC3E) |

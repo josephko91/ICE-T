@@ -17,7 +17,7 @@ Outputs (logs/cpi_fusion/<timestamp>/ and figs/cpi_fusion/<timestamp>/, with a
 
 Usage:
     python scripts/diagnose_cpi_fusion.py
-    python scripts/diagnose_cpi_fusion.py --env-data data/out/combined_env_data.parquet
+    python scripts/diagnose_cpi_fusion.py --env-data data/out/combined_env_data_L0.parquet
     python scripts/diagnose_cpi_fusion.py --rebuild   # re-run main.py first
 """
 
@@ -51,7 +51,7 @@ from scripts.log_paths import timestamp as _run_timestamp, update_latest
 # Paths
 # ---------------------------------------------------------------------------
 CPI_CSV       = ROOT / "data" / "raw" / "cpi_embeddings_timestamps.csv"
-DEFAULT_ENV   = ROOT / "data" / "out" / "combined_env_data.parquet"
+DEFAULT_ENV   = ROOT / "data" / "out" / "combined_env_data_L0.parquet"
 RUN_TS        = _run_timestamp()
 DIAG_DIR      = ROOT / "logs" / "cpi_fusion" / RUN_TS
 FIGS_DIR      = ROOT / "figs" / "cpi_fusion" / RUN_TS
@@ -396,7 +396,7 @@ def write_report(summary: pd.DataFrame, env: pd.DataFrame, out_path: Path) -> st
         "   data/raw/combined_env_si_airtemp_01.parquet used the old 'Tair'",
         "   column name (not 'Tair_C') and covered only 6 campaigns — a footgun",
         "   for anything that referenced it by accident. Deleted; fully",
-        "   superseded by data/out/combined_env_data.parquet.",
+        "   superseded by data/out/combined_env_data_L0.parquet.",
         "",
         "5. CRYSTAL_FACE_UND LOW Si COVERAGE (~53%)",
         "   Jul 7, 9, 11: MIS.CIT RH column is entirely fill values — the humidity",
@@ -454,11 +454,11 @@ def write_report(summary: pd.DataFrame, env: pd.DataFrame, out_path: Path) -> st
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Diagnose CPI–env data fusion coverage")
     p.add_argument("--env-data", type=Path, default=DEFAULT_ENV,
-                   help="Path to combined env parquet (default: data/out/combined_env_data.parquet)")
+                   help="Path to combined env parquet (default: data/out/combined_env_data_L0.parquet)")
     p.add_argument("--cpi-csv", type=Path, default=CPI_CSV,
                    help="Path to CPI embeddings timestamps CSV")
     p.add_argument("--rebuild", action="store_true",
-                   help="Re-run main.py to rebuild combined_env_data.parquet")
+                   help="Re-run main.py to rebuild combined_env_data_L0.parquet")
     return p.parse_args()
 
 

@@ -1,6 +1,6 @@
 # Dataset Changelog
 
-Reverse-chronological log of changes that affect `data/out/combined_env_data.parquet`'s
+Reverse-chronological log of changes that affect `data/out/combined_env_data_L0.parquet`'s
 rows, columns, or coverage — new/removed campaigns, schema changes, and bugfixes that
 measurably move row counts or coverage %. **Not** a commit log (see `git log`) and
 **not** a per-pipeline-run log (see `logs/pipeline/<ts>/`) — those already capture

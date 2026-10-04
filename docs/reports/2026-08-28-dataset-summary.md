@@ -1,7 +1,7 @@
 # Dataset Summary — L0 / L1 / L2 — 2026-08-28
 
 Descriptive reference for the current `combined_env_data*.parquet` tiers.
-Computed directly against `data/out/combined_env_data.parquet` /
+Computed directly against `data/out/combined_env_data_L0.parquet` /
 `_L1.parquet` / `_L2.parquet`, already rebuilt and validated this session
 (`docs/reports/2026-08-28-dataset-validation.md`) — no rebuild performed for
 this report. See CLAUDE.md's "Data tiers" section for tier definitions.

@@ -99,7 +99,7 @@ def _parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--env", type=Path,
-                   default=ROOT / "data" / "out" / "combined_env_data.parquet",
+                   default=ROOT / "data" / "out" / "combined_env_data_L0.parquet",
                    help="Path to combined parquet file")
     p.add_argument("--out", type=Path,
                    default=ROOT / "logs" / "qaqc" / ts,

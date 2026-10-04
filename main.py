@@ -7,8 +7,8 @@ atmospheric field campaigns, extracting standardized environmental (Si, temperat
 and positional (lat, lon, altitude) measurements.
 
 Usage:
-    python main.py --campaigns ARM MC3E --output combined_env_data.parquet
-    python main.py --all --output combined_env_data.parquet
+    python main.py --campaigns ARM MC3E --output combined_env_data_L0.parquet
+    python main.py --all --output combined_env_data_L0.parquet
     python main.py --config config.yaml
 """
 
@@ -667,7 +667,7 @@ Examples:
     parser.add_argument(
         "--output", "-o",
         type=Path,
-        default=root / "data" / "out" / "combined_env_data.parquet",
+        default=root / "data" / "out" / "combined_env_data_L0.parquet",
         help="Output parquet/csv path",
     )
 

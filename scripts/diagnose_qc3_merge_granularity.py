@@ -42,7 +42,7 @@ figs/qc3_merge_granularity/<timestamp>/, with `latest` symlinks):
 
 Usage:
     python scripts/diagnose_qc3_merge_granularity.py
-    python scripts/diagnose_qc3_merge_granularity.py --env data/out/combined_env_data.parquet
+    python scripts/diagnose_qc3_merge_granularity.py --env data/out/combined_env_data_L0.parquet
 """
 
 from __future__ import annotations
@@ -101,7 +101,7 @@ def _parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--env", type=Path,
-                   default=ROOT / "data" / "out" / "combined_env_data.parquet",
+                   default=ROOT / "data" / "out" / "combined_env_data_L0.parquet",
                    help="Path to combined parquet")
     p.add_argument("--out", type=Path,
                    default=ROOT / "logs" / "qc3_merge_granularity" / ts,

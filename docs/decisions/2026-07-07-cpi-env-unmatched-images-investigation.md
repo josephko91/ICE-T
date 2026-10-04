@@ -143,7 +143,7 @@ sys.path.insert(0, '.')
 from parsers.cpi_timestamps import load_cpi_embeddings_timestamps
 from parsers.utils import round_timestamp_to_second
 
-l0 = pd.read_parquet('data/out/combined_env_data.parquet', columns=['Campaign','Timestamp'])
+l0 = pd.read_parquet('data/out/combined_env_data_L0.parquet', columns=['Campaign','Timestamp'])
 l0['Timestamp'] = round_timestamp_to_second(l0['Timestamp'])
 l0 = l0.drop_duplicates(subset=['Campaign','Timestamp'])
 cpi = load_cpi_embeddings_timestamps('data/raw/cpi_embeddings_timestamps.csv')

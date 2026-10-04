@@ -1,5 +1,5 @@
 """
-Full diagnostic of combined_env_data.parquet.
+Full diagnostic of combined_env_data_L0.parquet.
 Console-only: per-variable summary stats, per-campaign availability table,
 row counts, and known-issue quick checks. No figures are written here — the
 distribution/scatter/availability plots that used to live in this script now
@@ -19,7 +19,7 @@ sys.path.insert(0, str(ROOT))
 # ---------------------------------------------------------------------------
 # Config
 # ---------------------------------------------------------------------------
-PARQUET = ROOT / "data" / "out" / "combined_env_data.parquet"
+PARQUET = ROOT / "data" / "out" / "combined_env_data_L0.parquet"
 
 VARIABLES = ["Tair_C", "P_hPa", "Alt_m", "Si", "Sw", "qv"]
 

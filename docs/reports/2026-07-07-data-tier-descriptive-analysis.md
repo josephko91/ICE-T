@@ -16,7 +16,7 @@ Revision note:    the first version of section 3 regressed on only the
 # L0/L1/L2 Descriptive Analysis + CPI Embedding / Environment Relationship
 
 Descriptive statistics for every core variable at each of the three data
-tiers (`data/out/combined_env_data.parquet` = L0,
+tiers (`data/out/combined_env_data_L0.parquet` = L0,
 `combined_env_data_L1.parquet` = L1, `combined_env_data_L2.parquet` = L2 —
 see `docs/decisions/2026-07-07-exact-second-merge-rewrite.md` for the tier
 definitions), plus an investigation into whether CPI particle-image

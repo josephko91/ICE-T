@@ -7,7 +7,7 @@ GitHub issue #12: no merge tolerance anywhere in this pipeline, so a second
 without a real measurement is NaN rather than a fabricated nearest-match
 value.
 
-  L0 - data/out/combined_env_data.parquet itself: every whole second where
+  L0 - data/out/combined_env_data_L0.parquet itself: every whole second where
        *any* instrument in a campaign reported *anything* (the union of all
        instrument timestamps within that campaign, built by the parsers).
   L1 - one row per CPI particle image, joined to its exact-second L0 env
@@ -32,7 +32,7 @@ Outputs:
 
 Usage:
     python scripts/build_data_tiers.py
-    python scripts/build_data_tiers.py --env data/out/combined_env_data.parquet
+    python scripts/build_data_tiers.py --env data/out/combined_env_data_L0.parquet
 """
 
 from __future__ import annotations
@@ -68,7 +68,7 @@ def _parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--env", type=Path,
-                   default=ROOT / "data" / "out" / "combined_env_data.parquet",
+                   default=ROOT / "data" / "out" / "combined_env_data_L0.parquet",
                    help="Path to the L0 combined parquet")
     p.add_argument("--cpi", type=Path, default=CPI_CSV,
                    help="Path to the CPI embeddings timestamp CSV")

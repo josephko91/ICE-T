@@ -20,7 +20,7 @@ GGALT-native repeats"); those 6 are out of scope here.
 ## Method
 
 `scripts/diagnose_qc3_merge_granularity.py` re-detects the same stuck runs
-directly from `combined_env_data.parquet` (same run-length-encoding logic
+directly from `combined_env_data_L0.parquet` (same run-length-encoding logic
 as QC3, `>=30` bit-exact-identical samples) and, for each run, tests two
 signatures that distinguish "reference source repeating its last value
 while a faster stream keeps ticking" from "genuine multi-minute sensor
@@ -92,7 +92,7 @@ parsers is being reworked for another reason.
 python scripts/diagnose_qc3_merge_granularity.py
 ```
 
-Reads `data/out/combined_env_data.parquet`; writes to
+Reads `data/out/combined_env_data_L0.parquet`; writes to
 `logs/qc3_merge_granularity/<timestamp>/` and
 `figs/qc3_merge_granularity/<timestamp>/` (with `latest` symlinks), per
 `scripts/log_paths.py` convention.

@@ -160,7 +160,7 @@ regenerate with:
 ```python
 import pandas as pd
 cols = [...]  # see CLAUDE.md's "Standard output schema" section for the full column list
-for tier, path in [("L0","data/out/combined_env_data.parquet"),
+for tier, path in [("L0","data/out/combined_env_data_L0.parquet"),
                     ("L1","data/out/combined_env_data_L1.parquet"),
                     ("L2","data/out/combined_env_data_L2.parquet")]:
     df = pd.read_parquet(path)

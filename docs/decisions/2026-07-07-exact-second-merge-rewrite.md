@@ -55,7 +55,7 @@ rather than being anchored to one "primary" instrument):
 **New `scripts/build_data_tiers.py`** derives L1/L2 from the (now
 corrected) L0 combined parquet:
 
-- **L0** = `data/out/combined_env_data.parquet` (no rename) -- every whole
+- **L0** = `data/out/combined_env_data_L0.parquet` (no rename) -- every whole
   second where any instrument in a campaign reported anything.
 - **L1** = `data/out/combined_env_data_L1.parquet` -- L0 filtered to only
   seconds with a CPI image for that campaign (exact match against

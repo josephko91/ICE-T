@@ -47,7 +47,7 @@ ICE-L, ISDAC, MACPEX, MC3E, MIDCIX, MPACE, OLYMPEX, POSIDON
    the pipeline.
 4. **Run the pipeline:**
    ```
-   python main.py --all                    # build L0 (combined_env_data.parquet)
+   python main.py --all                    # build L0 (combined_env_data_L0.parquet)
    python scripts/build_data_tiers.py      # derive L1/L2 from L0
    python scripts/qa_checks.py             # run the 9 QC checks
    ```

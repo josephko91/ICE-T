@@ -21,7 +21,7 @@ kept pointing at the newest run):
 
 Usage (standalone):
   python scripts/plot_all_campaigns.py
-  python scripts/plot_all_campaigns.py --env data/out/combined_env_data.parquet --out figs/all-campaigns/custom
+  python scripts/plot_all_campaigns.py --env data/out/combined_env_data_L0.parquet --out figs/all-campaigns/custom
 
 Called automatically by main.py after processing (main.py passes an explicit
 --out, so its own figs/all-campaigns/latest symlink stays authoritative).
@@ -60,7 +60,7 @@ def _kde(data, x):
 def _parse_args():
     p = argparse.ArgumentParser()
     p.add_argument("--env", type=Path,
-                   default=ROOT / "data" / "out" / "combined_env_data.parquet")
+                   default=ROOT / "data" / "out" / "combined_env_data_L0.parquet")
     p.add_argument("--out", type=Path,
                    default=ROOT / "figs" / "all-campaigns" / _run_timestamp())
     return p.parse_args()

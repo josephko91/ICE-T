@@ -59,7 +59,7 @@ from scripts.analyze_data_tiers import descriptive_by_campaign, CORE_COLS, CAMPA
 from scripts.log_paths import timestamp as _run_timestamp, update_latest
 
 TIER_PATHS = {
-    "L0": ROOT / "data" / "out" / "combined_env_data.parquet",
+    "L0": ROOT / "data" / "out" / "combined_env_data_L0.parquet",
     "L1": ROOT / "data" / "out" / "combined_env_data_L1.parquet",
     "L2": ROOT / "data" / "out" / "combined_env_data_L2.parquet",
 }

@@ -21,7 +21,7 @@ from parsers.utils import SI_MAX, SI_MIN, mask_si_out_of_range  # noqa: E402
 
 OUT_DIR = REPO_ROOT / "data" / "out"
 TIERS = [
-    "combined_env_data.parquet",
+    "combined_env_data_L0.parquet",
     "combined_env_data_L1.parquet",
     "combined_env_data_L2.parquet",
     "combined_env_data_L1_cocpit.parquet",

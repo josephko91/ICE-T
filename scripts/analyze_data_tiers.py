@@ -6,7 +6,7 @@ Descriptive statistics for every variable at each data tier, plus (for L2
 only) an investigation of the relationship between CPI particle-image
 embeddings and the environmental variables each image is joined to.
 
-  L0 - data/out/combined_env_data.parquet
+  L0 - data/out/combined_env_data_L0.parquet
   L1 - data/out/combined_env_data_L1.parquet
   L2 - data/out/combined_env_data_L2.parquet
 
@@ -110,7 +110,7 @@ def _parse_args() -> argparse.Namespace:
     ts = _run_timestamp()
     p = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("--l0", type=Path, default=ROOT / "data" / "out" / "combined_env_data.parquet")
+    p.add_argument("--l0", type=Path, default=ROOT / "data" / "out" / "combined_env_data_L0.parquet")
     p.add_argument("--l1", type=Path, default=ROOT / "data" / "out" / "combined_env_data_L1.parquet")
     p.add_argument("--l2", type=Path, default=ROOT / "data" / "out" / "combined_env_data_L2.parquet")
     p.add_argument("--embeddings", type=Path, default=EMBEDDINGS_PATH)

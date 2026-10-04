@@ -22,7 +22,7 @@ each kept pointing at the newest run):
 
 Usage:
     python scripts/diagnose_turbulence_coverage.py
-    python scripts/diagnose_turbulence_coverage.py --env data/out/combined_env_data.parquet
+    python scripts/diagnose_turbulence_coverage.py --env data/out/combined_env_data_L0.parquet
 """
 
 from __future__ import annotations
@@ -60,7 +60,7 @@ def _parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--env", type=Path,
-                   default=ROOT / "data" / "out" / "combined_env_data.parquet",
+                   default=ROOT / "data" / "out" / "combined_env_data_L0.parquet",
                    help="Path to combined L0 parquet file")
     p.add_argument("--out", type=Path, default=None,
                    help="Directory for CSV outputs (default: logs/diagnose_turbulence_coverage/<ts>/)")

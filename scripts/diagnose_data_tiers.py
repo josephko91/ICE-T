@@ -4,7 +4,7 @@ L0/L1/L2 Data Tier Diagnostic
 ==============================
 Reports on the three data tiers produced by scripts/build_data_tiers.py:
 
-  L0 - data/out/combined_env_data.parquet: every whole second where *any*
+  L0 - data/out/combined_env_data_L0.parquet: every whole second where *any*
        instrument in a campaign reported *anything* (union of all
        instrument timestamps, exact-second joins only -- no merge_asof
        tolerance; see docs/decisions/2026-07-07-exact-second-merge-rewrite.md).
@@ -26,7 +26,7 @@ figs/diagnose_data_tiers/<timestamp>/, with `latest` symlinks):
 
 Usage:
     python scripts/diagnose_data_tiers.py
-    python scripts/diagnose_data_tiers.py --l0 data/out/combined_env_data.parquet
+    python scripts/diagnose_data_tiers.py --l0 data/out/combined_env_data_L0.parquet
 """
 
 from __future__ import annotations
@@ -76,7 +76,7 @@ def _parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--l0", type=Path,
-                   default=ROOT / "data" / "out" / "combined_env_data.parquet")
+                   default=ROOT / "data" / "out" / "combined_env_data_L0.parquet")
     p.add_argument("--l1", type=Path,
                    default=ROOT / "data" / "out" / "combined_env_data_L1.parquet")
     p.add_argument("--l2", type=Path,

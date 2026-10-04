@@ -2,7 +2,10 @@
 __pycache__/
 *.py[codz]
 *$py.class
-data/
+data/*
+!data/out/
+data/out/*
+!data/out/README.md
 scripts/tests/output/
 logs/*
 !logs/README.md
