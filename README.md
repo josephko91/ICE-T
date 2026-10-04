@@ -1,59 +1,83 @@
 # CPI-Thermo: Cloud particle imagery with thermodynamics
 
-## Overview
-This repository provides tools and scripts to create a unified dataset that merges CPI imagery with co-located thermodynamic mesurements. It includes modular data parsers for multiple field campaigns, a main processing script, and configuration files for reproducible research.
+Combines atmospheric aircraft campaign data from 15 field campaigns into a
+single dataset for thermodynamic analysis — ice supersaturation (Si), water
+vapor (qv), and temperature vs. altitude — joined exact-second to CPI
+(Cloud Particle Imager) particle images for morphology/ice-habit analysis.
 
-## Features
-- Modular parsers for various airborne field campaigns
-- Integration of cloud particle imagery with thermodynamic measurements
-- Configurable processing pipeline
-- Easily extensible for new campaigns or data sources
+## Data tiers
 
-## Directory Structure
-```
-├── main.py                # Main entry point for processing
-├── config.yaml            # Configuration file
-├── requirements.txt       # Python dependencies
-├── parsers/               # Campaign-specific and utility parsers
-│   ├── __init__.py
-│   ├── ...
-├── .gitignore             # Files and folders to ignore in git
-├── LICENSE                # License information
-```
+| Tier | Definition |
+|------|------------|
+| L0 | Every whole second where *any* instrument in a campaign reported *anything* (union of all instrument timestamps) |
+| L1 | One row per CPI particle image, joined to its exact-second L0 environmental record |
+| L2 | L1 filtered to rows with every core variable present (`Tair_C, P_hPa, Si, qv, Lat, Lon, Alt_m`) |
 
-## Getting Started
+Every cross-instrument merge is an **exact-second join** (floor to the
+nearest second, outer merge) — never a nearest-neighbor/tolerance match. A
+second with no reading from a given instrument is NaN for that instrument,
+not a borrowed value from a different second.
+
+An additional pair of tiers (`L1_cocpit`, `L2_cocpit`) left-joins particle
+size, geometry, and habit-classification features from a separate COCPIT
+model output onto L1/L2 by `cpi_filename`. Producing these requires access
+to the external COCPIT feature database (see `scripts/join_cocpit_features.py`)
+and is not part of the core pipeline run.
+
+## Campaigns
+
+ARM, AIRS-II, ATTREX, CRYSTAL-FACE-NASA, CRYSTAL-FACE-UND, ESCAPE, IPHEX,
+ICE-L, ISDAC, MACPEX, MC3E, MIDCIX, MPACE, OLYMPEX, POSIDON
+
+## Getting started
+
 1. **Clone the repository:**
    ```
-   git clone https://github.com/<your-username>/cpi-thermo.git
+   git clone https://github.com/josephko91/cpi-thermo.git
    cd cpi-thermo
    ```
-2. **Install dependencies:**
+2. **Install dependencies** (exact versions this pipeline was validated against — see `requirements.txt`):
    ```
    pip install -r requirements.txt
    ```
-3. **Configure your run:**
-   - Edit `config.yaml` as needed for your data and environment.
-4. **Run the main script:**
+3. **Provide raw campaign data.** Raw instrument files are not distributed
+   in this repository (`data/` is gitignored — campaign data is
+   access-restricted/large). Populate `data/raw/<CAMPAIGN>/...` per
+   `config.yaml`'s per-campaign `path`/`pattern` settings before running
+   the pipeline.
+4. **Run the pipeline:**
    ```
-   python main.py --all
+   python main.py --all                    # build L0 (combined_env_data.parquet)
+   python scripts/build_data_tiers.py      # derive L1/L2 from L0
+   python scripts/qa_checks.py             # run the 9 QC checks
    ```
 
-## Campaign Coverage Notes
+## Known limitations
 
-**MPACE (Mixed-Phase Arctic Cloud Experiment):** CPI imagery exists for MPACE but no
-environmental (Tair, Si) parser has been implemented. The MPACE aircraft did not carry a
-dedicated water vapor instrument suitable for deriving ice supersaturation (Si), so those
-CPI images cannot be paired with Si measurements and are excluded from the combined dataset.
+- **ARM qv**: 63.6% NaN — real data sparsity in the dry upper troposphere, not a parser bug.
+- **CPI/env unmatched images** (6.3% of CPI images): instrument power-on
+  gaps relative to the aircraft's environmental recording, not a pipeline
+  bug. Concentrated in ISDAC and one ARM flight date.
+- **OLYMPEX, POSIDON, ESCAPE**: L0 env data only, zero L1/L2 rows — no CPI
+  imagery archived for these campaigns in this pipeline's inputs.
+- **MPACE**: zero L2 rows — flew no water-vapor instrument, so Si/qv are
+  NaN for every record.
 
-## Adding New Campaign Parsers
-- Add a new Python file in the `parsers/` directory following the existing parser structure.
-- Update `main.py` or configuration as needed to include the new parser.
+Full investigation history and per-decision rationale is in
+`docs/decisions/` and `docs/reports/` (see `docs/README.md`); the curated,
+user-facing summary of dataset-affecting changes is
+`docs/dataset-changelog.md`.
+
+## Adding a new campaign parser
+
+Add `parsers/<campaign>.py` implementing `load_*()` + `extract_*_standard()`
+following the existing parsers, then register it in `config.yaml`.
 
 ## License
-This project is licensed under the terms of the LICENSE file.
 
-## Acknowledgments
-- todo
+GPLv3 — see `LICENSE`.
 
 ## Contact
-For questions or contributions, please open an issue or submit a pull request. Or email <jk4730@columbia.edu>
+
+Questions or contributions: open an issue or pull request, or email
+Joseph Ko at koseph123@gmail.com.
