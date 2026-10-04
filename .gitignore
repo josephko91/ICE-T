@@ -5,7 +5,7 @@ __pycache__/
 data/*
 !data/out/
 data/out/*
-!data/out/README.md
+!data/out/README.txt
 scripts/tests/output/
 logs/*
 !logs/README.md
