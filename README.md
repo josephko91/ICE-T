@@ -80,4 +80,4 @@ GPLv3 — see `LICENSE`.
 ## Contact
 
 Questions or contributions: open an issue or pull request, or email
-Joseph Ko at koseph123@gmail.com.
+Joseph Ko at jk4730@columbia.edu.
