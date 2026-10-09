@@ -94,10 +94,10 @@ def build_l1(l0: pd.DataFrame, cpi: pd.DataFrame) -> pd.DataFrame:
 
     CPI timestamps are whole-second (no sub-second precision), but L0
     itself is not always 1Hz-unique per (Campaign, Timestamp) -- e.g. ARM
-    is a genuine native 4Hz stream (0.25s intervals), so flooring its
+    is a genuine native 4Hz stream (0.25s intervals), so rounding its
     Timestamp to the second produces up to 4 L0 rows per second. Since a
     CPI image can't be attributed to one specific sub-second reading over
-    another, L0 is deduped to one row per (Campaign, floored second) --
+    another, L0 is deduped to one row per (Campaign, rounded second) --
     keeping the first sample in that second -- *for this merge only* (L0
     itself, and its sub-second resolution, is untouched). Without this,
     each image would fan out across every sub-second L0 row sharing its

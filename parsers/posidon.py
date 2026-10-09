@@ -175,7 +175,7 @@ def _combine_ict_files(
     joined via an exact-second outer join on *datetime_utc* -- no merge_asof
     tolerance. A second reported by only one instrument becomes a row with
     that instrument's columns filled and the rest NaN; the row grid is the
-    union of every instrument's own (floored-to-the-second) timestamps.
+    union of every instrument's own (rounded-to-the-nearest-second) timestamps.
     """
     dfs: list[pd.DataFrame] = []
     for fp in file_list:

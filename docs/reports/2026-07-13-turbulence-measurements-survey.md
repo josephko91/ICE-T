@@ -96,7 +96,7 @@ without conversion.
 - **Native rate: 4 Hz** (0.25 s steps) — confirmed empirically by decoding a file. This is the highest native rate of any campaign except ISDAC's unused 5 Hz source, and conflicts with this repo's exact-second merge convention (`round_timestamp_to_second`) since `parsers/arm.py` is the only parser that does **not** call it — its `Timestamp` retains sub-second precision.
 - **Variables found:** `Vertical_Wind_m_s` (direct vertical wind), `Turbulence_eps` (turbulence/EDR-type field, readme labels it "Turbulence"), `True_Air_Speed_m_s`, `Wind_Speed_m_s`, `Wind_Direction_deg`, `INS_Heading_deg`, `Pitch_deg`, `Roll_deg`.
 - **Parser status:** all 8 already **decoded into the DataFrame** returned by `load_arm_file()` (`parsers/arm.py:110-123`). `extract_arm_standard()` (`arm.py:312-347`) drops all of them.
-- **Caveat:** any addition here forces a decision — floor to 1 Hz like everything else (discards 3 of 4 samples) or carry sub-second data outside the current L0/L1/L2 scheme.
+- **Caveat:** any addition here forces a decision — round to 1 Hz like everything else (discards 3 of 4 samples) or carry sub-second data outside the current L0/L1/L2 scheme.
 
 ### AIRS-II
 - **Raw format:** NetCDF, RAF-Nimbus convention, 1 Hz "LRT" (low-rate) product only — no high-rate file exists in this archive, even though several variables' metadata (`SampledRate=250`, etc.) documents the aircraft's original pre-decimation sampling rate.
@@ -223,7 +223,7 @@ to `extract_*_standard()`.**
    pattern)?
 4. **Sub-second data conflicts with the exact-second merge convention:**
    ARM (4 Hz) and ISDAC's unused wolde-convair source (5 Hz) are the two
-   highest-rate sources found. Flooring to 1 Hz (like every other parser
+   highest-rate sources found. Rounding to 1 Hz (like every other parser
    already does) discards most of the signal turbulence analysis would
    want; carrying native rate would mean a data structure genuinely outside
    the current L0/L1/L2 tier scheme. This should be settled before writing

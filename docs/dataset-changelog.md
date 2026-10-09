@@ -18,6 +18,26 @@ for per-investigation root-cause writeups.
 
 ---
 
+## 2026-10-09 — Timestamp snapping changed from floor to half-up nearest-second rounding
+
+**See:** `docs/decisions/2026-10-09-half-up-timestamp-rounding.md` and
+`docs/reports/2026-10-09-half-up-rounding-rebuild.md`.
+**Campaigns:** 15 (no change). **Schema:** no change. **Rows:** L0 4,572,581 ->
+4,572,601 (+20: ARM +16, CRYSTAL-FACE-NASA +5, POSIDON −1), L1 2,997,447 ->
+2,997,443, L2 1,828,818 -> 1,828,034 (−784: CRYSTAL-FACE-NASA −459, MIDCIX −430,
+MC3E −39, IPHEX −18, ARM +162). CPI fusion 93.7% matched (unchanged), 57.1% with
+all seven core variables (unchanged).
+
+`round_timestamp_to_second` now rounds to the nearest second with ties up,
+`floor(ts + 0.5 s)`, instead of `.dt.floor("s")`. pandas' own `.dt.round("s")`
+rounds exact .5 ties to the nearest even second (banker's rounding) and
+collides on data stamped at a fixed .5 s offset, so it cannot be used. Sources
+with fractional-second stamps move up to 1 s later; L2 loses/gains images at
+the edges of valid-data segments because CPI timestamps are whole seconds.
+QC7 unchanged at 2; QC2 80,608 -> 80,593; QC6 67 -> 68.
+
+---
+
 ## 2026-09-21 — One dataset-wide Si plausibility bound [-1, 2] (out-of-range Si now NaN, never clamped)
 
 **See:** `docs/reports/2026-08-28-dataset-construction-and-qc.md` §2 step 4 and

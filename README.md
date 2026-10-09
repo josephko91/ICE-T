@@ -13,7 +13,7 @@ vapor (qv), and temperature vs. altitude — joined exact-second to CPI
 | L1 | One row per CPI particle image, joined to its exact-second L0 environmental record |
 | L2 | L1 filtered to rows with every core variable present (`Tair_C, P_hPa, Si, qv, Lat, Lon, Alt_m`) |
 
-Every cross-instrument merge is an **exact-second join** (floor to the
+Every cross-instrument merge is an **exact-second join** (round half-up to the
 nearest second, outer merge) — never a nearest-neighbor/tolerance match. A
 second with no reading from a given instrument is NaN for that instrument,
 not a borrowed value from a different second.

@@ -75,13 +75,16 @@ parser follows the same processing sequence:
    instrument artifacts. Measured effect: "Effect of the plausibility bounds"
    below. (Before 2026-09-21 the bounds differed by campaign — [-1, 1], [-1, 2],
    [-1, 5], |Si| > 10, or a clamp — see `docs/dataset-changelog.md`.)
-5. **Timestamp flooring** — every timestamp floored (not rounded) to the
-   nearest whole second (`parsers/utils.py::round_timestamp_to_second`),
-   the merge key for every cross-instrument join within a campaign (see
-   harmonization report §3 for why floor rather than round).
+5. **Timestamp rounding** — every timestamp rounded half-up to the
+   nearest whole second (`parsers/utils.py::round_timestamp_to_second`,
+   `floor(ts + 0.5 s)`; pandas' own `.dt.round` is half-to-even and
+   collides on .5 s-offset data), the merge key for every cross-instrument
+   join within a campaign (see
+   `docs/decisions/2026-10-09-half-up-timestamp-rounding.md`; before
+   2026-10-09 this step floored).
 6. **Per-campaign cross-instrument merge** — each campaign's own
    instrument files (temperature, pressure, humidity, position,
-   turbulence) are combined via an outer merge on the floored timestamp —
+   turbulence) are combined via an outer merge on the rounded timestamp —
    never a `merge_asof` tolerance (repo-wide policy since
    `docs/decisions/2026-07-07-exact-second-merge-rewrite.md`, GitHub issue
    #12).
@@ -211,7 +214,7 @@ flag counts.
 | QC4 | Fill/sentinel value detection | Checks for un-converted fill/sentinel magnitudes (`-9999`, `-999`, `-8888`, `-7777`, `9999`, `99999`, `±1000`) surviving in the combined dataset — i.e. a masking step that should have caught them but didn't. |
 | QC5 | Inter-instrument cross-validation | For campaigns with 2+ independent instruments measuring the same quantity (e.g. MACPEX's HWV/DLH/JLH hygrometers, ATTREX's DLH/NOAA/UCATS, IPHEX's chilled-mirror/Ophir TDL), compares simultaneous readings for systematic offset. |
 | QC6 | Per-flight coverage audit | Characterizes data coverage (`Si`, `Tair_C`, `P_hPa`, `qv`, `Alt_m`) at the individual-flight-date level, catching whole-flight gaps a campaign-level aggregate would hide. |
-| QC7 | Timestamp quality | Detects duplicate, near-duplicate, and out-of-order timestamps after the exact-second flooring. |
+| QC7 | Timestamp quality | Detects duplicate, near-duplicate, and out-of-order timestamps after the exact-second rounding. |
 | QC8 | Vertical profile plausibility | Bins `Tair_C`/`qv` by pressure level (11 standard levels, 1050→0 hPa) and compares against the ICAO standard atmosphere temperature profile and saturation-vapor-pressure bounds. |
 | QC9 | LWC cross-check (severe Si flags) | Re-reads raw liquid-water-content data for IPHEX/OLYMPEX's severe `Si > 1.05` flags (LWC isn't part of the standard schema) to distinguish real in-cloud/precipitation contamination from likely sensor error. |
 

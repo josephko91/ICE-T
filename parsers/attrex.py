@@ -217,7 +217,7 @@ def _combine_ict_files(
     outer join on ``datetime_utc`` -- no merge_asof tolerance. A second
     reported by only one instrument becomes a row with that instrument's
     columns filled and the rest NaN; the row grid is the union of every
-    instrument's own (floored-to-the-second) timestamps.
+    instrument's own (rounded-to-the-nearest-second) timestamps.
 
     Parameters
     ----------
@@ -250,7 +250,7 @@ def _combine_ict_files(
             combined = pd.concat(parsed, ignore_index=True)
             combined["datetime_utc"] = round_timestamp_to_second(combined["datetime_utc"])
             # UCATS-H2O has an undocumented ~1.5s native sample interval, so
-            # flooring to the second can put two originally-distinct UCATS
+            # rounding to the second can put two originally-distinct UCATS
             # samples in the same bucket; keep_first for a deterministic
             # single value per second across every instrument, not just UCATS.
             combined = (

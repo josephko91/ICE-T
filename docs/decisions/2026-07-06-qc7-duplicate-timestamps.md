@@ -1,5 +1,7 @@
 # 2026-07-06 — QC7 duplicate-timestamp investigation
 
+> **Superseded 2026-10-09:** the floor-vs-round choice below was replaced by half-up nearest-second rounding — see `docs/decisions/2026-10-09-half-up-timestamp-rounding.md`. Kept as the historical record.
+
 ## Fix applied in commit: ee1a933 (CRYSTAL-FACE-NASA banker's-rounding bug)
 
 ## What we found

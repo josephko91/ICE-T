@@ -1,5 +1,7 @@
 # 2026-07-07 — Exact-second merge rewrite + L0/L1/L2 data tiers
 
+> **Superseded 2026-10-09:** the floor-vs-round choice below was replaced by half-up nearest-second rounding — see `docs/decisions/2026-10-09-half-up-timestamp-rounding.md`. Kept as the historical record.
+
 ## Question
 
 GitHub issue #10 (QC3 stuck-sensor runs) traced repeated values in

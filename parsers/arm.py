@@ -206,7 +206,7 @@ def load_arm_file(filepath: Union[str, Path]) -> pd.DataFrame:
     df["Timestamp"] = df["Date"] + pd.to_timedelta(df["Time_sec"], unit="s")
     df["Timestamp"] = df["Timestamp"].dt.tz_localize("UTC")
 
-    # ARM's raw source is 4 Hz; floor onto the pipeline's 1 Hz exact-second
+    # ARM's raw source is 4 Hz; round (half-up) onto the pipeline's 1 Hz exact-second
     # merge grid, keeping the first real sample per second (never averaged --
     # see first_per_second docstring). This changes ARM's row count from the
     # pre-existing 4 Hz-duplicated-Timestamp rows to true 1 Hz rows.

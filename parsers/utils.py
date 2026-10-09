@@ -195,20 +195,40 @@ def normalize_datetime_utc(values: pd.Series) -> pd.Series:
 
 
 def round_timestamp_to_second(series: pd.Series) -> pd.Series:
-    """Floor timestamps to whole seconds for exact-key cross-instrument merges.
+    """Round timestamps to the nearest whole second, ties (exactly .5 s) rounding UP.
 
-    .dt.round("s") uses round-half-to-even ("banker's rounding"): X.5-second
-    values round toward the nearest EVEN second, not consistently up. Some
-    source files sample at a fixed .5s offset, so two adjacent, physically
-    distinct 1 Hz samples (e.g. :03.5 and :04.5) both round to :04 and
-    collide into a spurious duplicate-timestamp row. floor() truncates
-    consistently in one direction, preserving the original 1s spacing with
-    no collisions. Every cross-instrument merge in this pipeline is an
-    exact-key join on this floored timestamp -- no merge_asof tolerance --
-    so consistent flooring across parsers is what makes the join keys
-    actually collide across instruments at the same wall-clock second.
+    This is the merge key for every exact-second cross-instrument join in the
+    pipeline (no merge_asof tolerance), so every parser must snap to the same
+    grid with the same rule.
+
+    Why this is NOT ``.dt.round("s")``: pandas (via NumPy/IEEE 754) rounds
+    exact halves to the nearest EVEN value ("round half to even", a.k.a.
+    banker's rounding), not the textbook "round half up" most people expect.
+    Anything strictly above or below .5 behaves normally, but an exact .5
+    tie goes to the even second::
+
+        raw      .dt.round("s")   half-up (this function)
+        :00.5    :00              :01
+        :01.5    :02              :02
+        :02.5    :02              :03
+        :03.5    :04              :04
+        :04.5    :04              :05
+
+    Some source files (e.g. CRYSTAL-FACE-NASA ``JW20020719.WB57``) sample at
+    1 Hz with every timestamp at a fixed .5 s offset, so EVERY sample is a
+    tie and half-to-even makes adjacent pairs collide (:01.5 and :02.5 both
+    -> :02): ~half the file became spurious duplicate-timestamp rows and the
+    odd seconds were left empty (the 2026-07-06 QC7 bug).
+
+    Half-up is implemented as an offset-then-truncate, ``floor(ts + 0.5 s)``.
+    The ``floor`` here is only the truncation step that completes a
+    nearest-second round; the result is ordinary nearest-second rounding with
+    ties up, and 1 Hz data at any fixed sub-second offset maps one-to-one
+    onto distinct seconds. See
+    docs/decisions/2026-10-09-half-up-timestamp-rounding.md.
     """
-    return pd.to_datetime(series, utc=True, errors="coerce").dt.floor("s")
+    ts = pd.to_datetime(series, utc=True, errors="coerce")
+    return (ts + pd.Timedelta(milliseconds=500)).dt.floor("s")
 
 
 # =============================================================================
@@ -253,11 +273,11 @@ def edr_from_mms_log10kWkg(log10_kWkg: np.ndarray) -> np.ndarray:
 
 
 def first_per_second(df: pd.DataFrame, ts_col: str = "Timestamp") -> pd.DataFrame:
-    """Floor timestamps to whole seconds and keep the first sample per second.
+    """Round timestamps to the nearest second (half-up) and keep the first sample per second.
 
     Factors out the round_timestamp_to_second -> dropna -> drop_duplicates
     idiom used when a raw source is sampled denser than 1 Hz and needs to be
-    floored onto the pipeline's 1 Hz exact-second-merge grid. Takes the first
+    rounded onto the pipeline's 1 Hz exact-second-merge grid. Takes the first
     actually-observed sample per second rather than averaging, since a mean
     across sub-second samples would synthesize a value that never existed at
     any single instant -- worse for a genuinely fluctuating turbulence

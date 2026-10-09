@@ -9,9 +9,11 @@ column schema; `main.py` runs all parsers and writes `data/out/combined_env_data
 (the **L0** tier — see "Data tiers" below).
 
 Every cross-instrument merge in every parser is an **exact-second join, never a merge
-tolerance**: each instrument's own timestamp is floored to the nearest second
-(`parsers/utils.py::round_timestamp_to_second`), then combined via `pd.merge(...,
-on="Timestamp", how="outer")`. A second with no reading from a given instrument is NaN
+tolerance**: each instrument's own timestamp is rounded **half-up** to the nearest second
+(`parsers/utils.py::round_timestamp_to_second` = `floor(ts + 0.5 s)`; deliberately NOT pandas'
+`.dt.round("s")`, which is round-half-to-even and collapses adjacent samples on data stamped at a
+fixed .5 s offset — see `docs/decisions/2026-10-09-half-up-timestamp-rounding.md`; the pipeline
+floored before 2026-10-09), then combined via `pd.merge(..., on="Timestamp", how="outer")`. A second with no reading from a given instrument is NaN
 for that instrument's columns — never a nearest-neighbor value borrowed from a
 different second. See `docs/decisions/2026-07-07-exact-second-merge-rewrite.md` and
 GitHub issue #12 for why (a prior `merge_asof(tolerance=...)` design was silently
@@ -119,15 +121,17 @@ core-variable-complete filter on every row.
 
 See `docs/decisions/` for per-investigation records and `docs/dataset-changelog.md`
 for the history of dataset-affecting changes (campaigns added, schema changes,
-coverage-moving bugfixes). Current dataset (L0): 15 campaigns, 4,572,581 rows (grew substantially
+coverage-moving bugfixes). Current dataset (L0): 15 campaigns, 4,572,601 rows (grew substantially
 2026-07-07 when merge tolerance was removed repo-wide — see
 `docs/decisions/2026-07-07-exact-second-merge-rewrite.md`; dropped from ~5.0M to
-4,572,581 on 2026-07-13 when ARM's L0 rows were floored from native 4 Hz to 1 Hz,
+4,572,581 on 2026-07-13 when ARM's L0 rows were reduced from native 4 Hz to 1 Hz,
 see `docs/dataset-changelog.md`); reproduced exactly (row counts, all 9 QC
 checks, CPI fusion %) from current code on 2026-08-28, see
 `docs/reports/2026-08-28-dataset-validation.md`; rebuilt 2026-09-21 with the uniform Si bound (row counts and
-CPI fusion % unchanged; QC1 6→4, QC2 80,648→80,608 — see `docs/dataset-changelog.md`). CPI/env fusion 93.7%
-matched overall (57.2% with both Tair_C and Si) — run
+CPI fusion % unchanged; QC1 6→4, QC2 80,648→80,608 — see `docs/dataset-changelog.md`); rebuilt 2026-10-09 with
+half-up timestamp rounding instead of floor (L0 4,572,581→4,572,601, L1 2,997,447→2,997,443, L2 1,828,818→1,828,034;
+QC7 unchanged at 2 — see `docs/reports/2026-10-09-half-up-rounding-rebuild.md`). CPI/env fusion 93.7%
+matched overall (57.1% with both Tair_C and Si) — run
 `python scripts/diagnose_cpi_fusion.py` for the full per-campaign breakdown. Key
 open items:
 

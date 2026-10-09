@@ -273,7 +273,7 @@ def _load_and_merge(
     on ``datetime_utc`` -- no merge_asof tolerance. A second reported by only
     one instrument becomes a row with that instrument's columns filled and
     the rest NaN; the row grid is the union of every instrument's own
-    (already floored-to-the-second) timestamps, not anchored to one "primary"
+    (already rounded-to-the-nearest-second) timestamps, not anchored to one "primary"
     instrument's grid.
 
     Parameters

@@ -101,7 +101,7 @@ factor, matters for harmonizing across instrument families.
 Every merge in this pipeline — combining multiple instruments within one
 campaign, and joining CPI particle images to environmental data — is an
 **exact-second join, never a merge-tolerance join.** Each instrument's own
-timestamp is floored (not rounded) to the nearest whole second
+timestamp is rounded half-up to the nearest whole second
 (`parsers/utils.py::round_timestamp_to_second`), then combined via
 `pd.merge(..., on="Timestamp", how="outer")`. A second with no reading
 from a given instrument is NaN for that instrument's columns — never a
@@ -116,11 +116,13 @@ tolerance window away and presenting it as if it were simultaneous. The
 rewrite grew the L0 row count substantially (documented in
 `docs/dataset-changelog.md`), since previously-merged rows that had only
 existed because of the tolerance window disappeared once the tolerance
-was removed. Floor (not round) is used specifically because some raw
-sources sample at a fixed 0.5-second offset; banker's-rounding would
-collide two physically distinct adjacent samples into one duplicate
-timestamp, while flooring preserves the original spacing with no
-collisions.
+was removed. Rounding is **half-up** (`floor(ts + 0.5 s)`), not pandas'
+`.dt.round("s")`: pandas rounds exact .5 ties to the nearest even second
+(banker's rounding), and some raw sources sample at a fixed 0.5-second
+offset, so every sample is a tie and adjacent samples collide into
+duplicate timestamps. Half-up keeps them on distinct seconds. (Until
+2026-10-09 the pipeline floored instead; see
+`docs/decisions/2026-10-09-half-up-timestamp-rounding.md`.)
 
 ## 4. Final dataset construction: L0 → L1 → L2
 
@@ -137,12 +139,12 @@ campaigns. **4,572,581 rows, 46 columns, 15 campaigns.**
 (Cloud Particle Imager) particle image, produced by an inner join of each
 campaign's CPI image timestamps (`parsers/cpi_timestamps.py`, the
 canonical loader for `data/raw/cpi_embeddings_timestamps.csv`) against
-that same campaign's L0 rows, on the exact floored second. This join is
+that same campaign's L0 rows, on the exact rounded second. This join is
 done **per campaign, not globally** — a CPI image from one campaign can
 never spuriously match an L0 row from a different campaign that happens
 to share the same wall-clock second. Because some campaigns' L0 is
 genuinely multi-Hz (e.g. ARM's native 4 Hz stream), L0 is deduplicated to
-one row per (campaign, floored second) — keeping the first actually-
+one row per (campaign, rounded second) — keeping the first actually-
 observed sample, never an average, since a mean across sub-second samples
 would synthesize a value that existed at no real instant — **for this
 join only**; L0 itself and its native sub-second resolution are
