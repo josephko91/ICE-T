@@ -105,14 +105,27 @@ degradation. Which side is "truly" simultaneous with a CPI frame depends on
 whether the instrument stamps the start, middle or end of its interval, which
 is undocumented per campaign (see the decision doc's caveats).
 
-## 4. Not rebuilt
+## 4. COCPIT-joined tiers (rebuilt)
 
-`combined_env_data_L1_cocpit.parquet` / `_L2_cocpit.parquet` (built by
-`scripts/join_cocpit_features.py` from an external, non-portable COCPIT path)
-were not regenerated and are now stale relative to L1/L2. Re-run that script
-when the COCPIT path is available. The earlier reports
-(`2026-08-28-dataset-validation.md`, `2026-08-29-*`) describe the pre-change
-(floor) numbers and are left as historical records.
+`python scripts/join_cocpit_features.py` (COCPIT v1.4.0, read from the local
+`/Users/josephko/research/cocpit/final_databases/vgg16/`) was re-run against
+the new L1/L2, regenerating `combined_env_data_L1_cocpit.parquet` and
+`combined_env_data_L2_cocpit.parquet`. All five parquets in `data/out/`
+(L0, L1, L2, L1_cocpit, L2_cocpit) now reflect half-up rounding.
+
+| Tier | Rows matched to a COCPIT feature row, before | after |
+|---|---|---|
+| L1 | 914,527 / 2,997,447 (30.51%) | 914,528 / 2,997,443 (30.51%) |
+| L2 | 531,346 / 1,828,818 (29.05%) | 530,599 / 1,828,034 (29.03%) |
+
+Per-campaign changes (everything else identical): L1 MC3E matched +1; L2
+CRYSTAL-FACE-NASA 16,127 -> 15,832 (78.90% -> 79.23%), MIDCIX 18,365 -> 17,959
+(97.22% -> 97.29%), MC3E 118,750 -> 118,721, IPHEX 11,884 -> 11,868, ARM
+12,980 -> 12,979. These follow the L2 row changes in section 3; COCPIT
+matching is by `cpi_filename`, which the rounding change does not touch.
+
+Earlier reports (`2026-08-28-dataset-validation.md`, `2026-08-29-*`) describe
+the pre-change (floor) numbers and are left as historical records.
 
 ## 5. Tests
 
