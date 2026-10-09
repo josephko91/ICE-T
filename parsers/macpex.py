@@ -23,12 +23,11 @@ The raw ICT values are stored as scaled integers:
 
 Si derivation
 -------------
-Uses the Tetens-style formula consistent with the MACPEX notebook analysis:
-    e_s = 6.112 × exp( 22.46 × (T_K − 273.15) / (T_K − 0.55) )   [hPa]
+Uses si_from_ppmv() in utils.py (Murphy & Koop 2005 e_s over ice; before
+2026-10-09 this was a Tetens-style fit, <=1.3% different in e_s to -85 degC):
+    e_s = es_ice_hPa(T_K − 273.15)                                  [hPa]
     e   = (wv_ppmv / 1e6) × P_hPa                                   [hPa]
     Si  = e / e_s − 1
-
-This is equivalent to si_from_ppmv() in utils.py, which is used internally.
 
 Physical validity ranges applied before Si computation
 ------------------------------------------------------

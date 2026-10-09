@@ -29,7 +29,7 @@ Si derivation (primary: DLH)
   P = MMS-1HZ_P × 0.01          [hPa]
   T = MMS-1HZ_T × 0.01          [K]
   e   = (DLH-H2O_H2O_ppmv / 1e6) × P
-  e_s = 6.112 × exp(22.46 × (T − 273.15) / (T − 0.55))   [hPa]
+  e_s = Murphy & Koop (2005) over ice, parsers/utils.py::es_ice_hPa(T − 273.15)   [hPa]
   Si  = e / e_s − 1
   Physical validity filter applied before Si: P > 0, DLH > 0
 
@@ -47,7 +47,7 @@ from typing import Optional, Union
 import numpy as np
 import pandas as pd
 
-from .utils import qv_from_ppmv, sw_from_si, round_timestamp_to_second, edr_from_mms_log10kWkg, mask_si_out_of_range
+from .utils import es_ice_hPa, qv_from_ppmv, sw_from_si, round_timestamp_to_second, edr_from_mms_log10kWkg, mask_si_out_of_range
 
 
 # ---------------------------------------------------------------------------
@@ -284,7 +284,7 @@ def load_posidon(
         T = combined.loc[valid, "T_K"]
         P = combined.loc[valid, "P_hPa"]
         ppmv = combined.loc[valid, dlh_col]
-        e_s = 6.112 * np.exp((22.46 * (T - 273.15)) / (T - 0.55))
+        e_s = es_ice_hPa(T.to_numpy(dtype=float) - 273.15)
         e = (ppmv / 1e6) * P
         si.loc[valid] = (e / e_s) - 1
 

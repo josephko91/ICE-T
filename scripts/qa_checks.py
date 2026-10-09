@@ -34,7 +34,7 @@ import pandas as pd
 # ---------------------------------------------------------------------------
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from parsers.utils import es_liq_hPa, es_ice_hPa  # noqa: E402
+from parsers.utils import EPSILON, es_liq_hPa, es_ice_hPa  # noqa: E402
 from scripts.log_paths import timestamp as _run_timestamp, update_latest  # noqa: E402
 
 # ---------------------------------------------------------------------------
@@ -339,7 +339,7 @@ def check_02_internal_consistency(
     sub_a = work[has_vars].copy()
     es_liq = es_liq_hPa(sub_a["Tair_C"].values)
     denom = sub_a["P_hPa"].values - es_liq
-    qv_sat = np.where(denom > 0, 0.622 * es_liq / denom * 1000, np.nan)
+    qv_sat = np.where(denom > 0, EPSILON * es_liq / denom * 1000, np.nan)
     sub_a["qv_sat_liq"] = qv_sat
     sub_a["qv_ratio"]   = sub_a["qv"] / sub_a["qv_sat_liq"]
 
@@ -667,7 +667,7 @@ def check_03_stuck_sensor(
         "check_id": "QC3",
         "check_name": "Stuck-sensor / temporal continuity",
         "n_flags_total": n_flags,
-        "pct_dataset_flagged": round(n_flags / n_total * 100, 4) if n_total else 0,
+        "pct_dataset_flagged": float("nan"),  # flags are runs of repeated values, not rows
         "n_campaigns_affected": n_camps,
         "notes": f"Stuck: ≥{MIN_RUN} consecutive identical readings; Gaps: >{GAP_HOURS}h intra-file",
     }
@@ -982,15 +982,20 @@ def check_05_instrument_crossval(
             plt.close(fig)
             print(f"  Saved {out_b}")
 
-    n_flags = len(stat_df[stat_df["pearson_r"].abs() < 0.5]) if len(stat_df) else 0
-    n_camps = stat_df["Campaign"].nunique() if len(stat_df) else 0
+    flagged_pairs = stat_df[stat_df["pearson_r"].abs() < 0.5] if len(stat_df) else stat_df
+    n_flags = len(flagged_pairs)
+    # "Campaigns affected" = campaigns with >= 1 flagged pair (same meaning as every
+    # other check). Campaigns merely *compared* are reported in the notes instead.
+    n_camps = flagged_pairs["Campaign"].nunique() if n_flags else 0
+    n_camps_compared = stat_df["Campaign"].nunique() if len(stat_df) else 0
     return {
         "check_id": "QC5",
         "check_name": "Inter-instrument cross-validation",
         "n_flags_total": n_flags,
-        "pct_dataset_flagged": 0.0,
+        "pct_dataset_flagged": float("nan"),  # flags are instrument pairs, not rows
         "n_campaigns_affected": n_camps,
-        "notes": f"{len(stat_df)} instrument pairs compared; n_flags = pairs with Pearson r < 0.5",
+        "notes": (f"{len(stat_df)} instrument pairs compared across {n_camps_compared} campaigns; "
+                  "n_flags = pairs with |Pearson r| < 0.5"),
     }
 
 
@@ -1111,7 +1116,7 @@ def check_06_coverage_audit(
         "check_id": "QC6",
         "check_name": "Per-flight coverage audit",
         "n_flags_total": n_flags,
-        "pct_dataset_flagged": 0.0,
+        "pct_dataset_flagged": float("nan"),  # flags are flight-days, not rows
         "n_campaigns_affected": n_camps_aff,
         "notes": "n_flags = flight-days with zero valid Si",
     }
@@ -1328,7 +1333,7 @@ def check_08_vertical_profiles(
             if not np.isnan(T_mean):
                 es_pc = float(es_liq_hPa(np.array([T_mean]))[0])
                 denom = pc - es_pc
-                qv_sat_pc = 0.622 * es_pc / denom * 1000 if denom > 0 else np.nan
+                qv_sat_pc = EPSILON * es_pc / denom * 1000 if denom > 0 else np.nan
             else:
                 qv_sat_pc = np.nan
 
@@ -1399,7 +1404,7 @@ def check_08_vertical_profiles(
         T_p = _icao_T_from_P(p)
         es  = float(es_ice_hPa(np.array([T_p]))[0])
         dn  = p - es
-        qv_sat_line.append(0.622 * es / dn * 1000 if dn > 0 else np.nan)
+        qv_sat_line.append(EPSILON * es / dn * 1000 if dn > 0 else np.nan)
 
     with plt.rc_context(STYLE):
         fig, ax = plt.subplots(figsize=(6, 8))
@@ -1433,7 +1438,7 @@ def check_08_vertical_profiles(
         "check_id": "QC8",
         "check_name": "Vertical profile plausibility",
         "n_flags_total": n_flags,
-        "pct_dataset_flagged": 0.0,
+        "pct_dataset_flagged": float("nan"),  # flags are pressure bins, not rows
         "n_campaigns_affected": n_camps,
         "notes": "n_flags = pressure bins where |T_mean − T_ISA| > 30°C or qv_mean > qv_sat",
     }
@@ -1598,8 +1603,19 @@ def check_09_lwc_crossval(
 # Summary writer
 # ---------------------------------------------------------------------------
 
+# What one "flag" counts in each check -- the units differ, so flag totals are not
+# additive across checks and "% of dataset" is only defined for the row-based ones.
+FLAG_UNITS = {
+    "QC1": "rows", "QC2": "rows", "QC3": "stuck runs", "QC4": "rows",
+    "QC5": "instrument pairs", "QC6": "flight-days", "QC7": "rows",
+    "QC8": "pressure bins", "QC9": "rows",
+}
+
+
 def write_summary(results: list[dict], out_dir: Path) -> None:
     summary_df = pd.DataFrame(results)
+    summary_df.insert(summary_df.columns.get_loc("n_flags_total") + 1, "flag_unit",
+                      summary_df["check_id"].map(FLAG_UNITS))
     path = out_dir / "00_qaqc_summary.csv"
     summary_df.to_csv(path, index=False)
     print(f"\nSaved overall summary → {path}")
@@ -1607,8 +1623,10 @@ def write_summary(results: list[dict], out_dir: Path) -> None:
     print(f"  {'Check':<6}  {'Name':<38}  {'N flags':>9}  {'% flagged':>10}  {'Campaigns':>9}")
     print("  " + "-" * 70)
     for r in results:
+        pct = r['pct_dataset_flagged']
+        pct_s = f"{pct:>9.3f}%" if pd.notna(pct) else f"{'n/a':>10}"
         print(f"  {r['check_id']:<6}  {r['check_name']:<38}  "
-              f"{r['n_flags_total']:>9,}  {r['pct_dataset_flagged']:>9.3f}%  "
+              f"{r['n_flags_total']:>9,}  {pct_s}  "
               f"{r['n_campaigns_affected']:>9}")
     print("=" * 72)
 

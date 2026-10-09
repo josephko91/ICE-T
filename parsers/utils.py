@@ -11,8 +11,25 @@ import pandas as pd
 from datetime import datetime
 from typing import List, Optional
 
-# Molar mass ratio water / dry air (kg/kg per mol/mol)
-_EPSILON: float = 18.015 / 28.964  # ≈ 0.6220
+# Molar mass ratio water / dry air (kg/kg per mol/mol), dimensionless.
+EPSILON: float = 18.015 / 28.964  # ≈ 0.6220
+_EPSILON: float = EPSILON  # backwards-compatible alias
+
+# -----------------------------------------------------------------------------
+# Units used throughout the thermodynamic functions below
+# -----------------------------------------------------------------------------
+#   Public API temperature      degC (``*_C``) or K (``*_K``) -- named in the argument
+#   Murphy & Koop (2005) e_s    evaluated internally with T in K and returns **Pa**
+#   e_s / e / P everywhere else hPa (the dataset's pressure unit: ``P_hPa``)
+#   Pa -> hPa                   divide by _PA_PER_HPA (= 100)
+#   e = x * P                   x = volume mixing ratio (mole fraction, ppmv * 1e-6,
+#                               dimensionless); e and P both in hPa
+#   q_v = 1000 * EPSILON * e/(P - e)    g/kg of dry air (e, P in the SAME unit,
+#                               ratio dimensionless; factor 1000 converts kg/kg -> g/kg)
+#   Si = e / e_s,ice(T) - 1     dimensionless (e and e_s in the SAME unit)
+# Mixing Pa and hPa is the one unit error this layout is designed to prevent:
+# es_ice() is Pa, every other function takes/returns hPa.
+_PA_PER_HPA: float = 100.0
 
 # Dataset-wide physical-plausibility range for ice supersaturation (Si).
 # Si < -1 is impossible (negative vapor pressure); Si > 2 is treated as an
@@ -21,6 +38,11 @@ _EPSILON: float = 18.015 / 28.964  # ≈ 0.6220
 # to each per-instrument Si_* column BEFORE the best-instrument Si is chosen
 # from the h2o_ranking, so a lower-ranked instrument can still fill in; main.py
 # applies it once more as a backstop and reports how many values it had to mask.
+# The upper bound is an engineering plausibility cut, not a physical law: Si=2 is
+# ~ the ice saturation ratio at *water* saturation near 185 K (es_liq/es_ice = 1.99
+# at -85 degC), and brackets published homogeneous-freezing thresholds (Koop et al.
+# 2000; Kraemer et al. 2009; Schneider et al. 2021). References and caveats:
+# docs/decisions/2026-10-09-si-bound-and-thermo-basis.md
 SI_MIN: float = -1.0
 SI_MAX: float = 2.0
 
@@ -47,17 +69,22 @@ def mask_si_out_of_range(si):
 
 def es_ice(T_C: np.ndarray) -> np.ndarray:
     """
-    Calculate saturation vapor pressure over ice using Murphy & Koop (2005).
-    
+    Saturation vapor pressure over ice, Murphy & Koop (2005), in **Pa**.
+
+    The Murphy & Koop expression takes T in Kelvin and returns Pa
+    (611.2 Pa at 0 degC). Use ``es_ice_hPa`` for the pipeline's hPa convention;
+    this function is kept in Pa because ``si_from_frost_point`` only needs the
+    (unit-free) ratio of two es_ice values.
+
     Parameters
     ----------
     T_C : array-like
         Temperature in degrees Celsius.
-        
+
     Returns
     -------
     np.ndarray
-        Saturation vapor pressure over ice in hPa.
+        Saturation vapor pressure over ice in Pa.
     """
     T_K = np.asarray(T_C) + 273.15
     return np.exp(9.550426 - 5723.265 / T_K + 3.53068 * np.log(T_K) - 0.007283 * T_K)
@@ -66,6 +93,9 @@ def es_ice(T_C: np.ndarray) -> np.ndarray:
 def si_from_frost_point(frost_point_C: np.ndarray, temperature_C: np.ndarray) -> np.ndarray:
     """
     Compute ice supersaturation (Si) from frost point and ambient temperature.
+
+    Si = es_ice(T_frost) / es_ice(T) - 1. Both es_ice values are in Pa; the ratio
+    is dimensionless, so the unit cancels.
     
     Parameters
     ----------
@@ -111,10 +141,12 @@ def si_from_ppmv(wv_ppmv: np.ndarray, temp_K: np.ndarray, pressure_hPa: np.ndarr
         | ~np.isfinite(pressure_hPa) | (pressure_hPa <= 0)
     )
 
-    # Calculate saturation vapor pressure over ice in hPa
-    e_s = 6.112 * np.exp((22.46 * (temp_K - 273.15)) / (temp_K - 0.55))
+    # Saturation vapor pressure over ice in hPa: same Murphy & Koop (2005) basis
+    # as every other Si path (frost point, RH), not a Magnus/Tetens fit.
+    with np.errstate(invalid="ignore", divide="ignore", over="ignore"):
+        e_s = es_ice_hPa(temp_K - 273.15)
 
-    # Convert vapor mixing ratio (ppmv) to actual vapor pressure (e) in hPa
+    # Volume mixing ratio (ppmv, mole fraction) -> vapor pressure e [hPa] = x * P [hPa]
     e = (wv_ppmv / 1e6) * pressure_hPa
 
     result = (e / e_s) - 1.0
@@ -127,12 +159,12 @@ def si_from_ppmv(wv_ppmv: np.ndarray, temp_K: np.ndarray, pressure_hPa: np.ndarr
 
 
 def es_ice_hPa(T_C: np.ndarray) -> np.ndarray:
-    """Saturation vapor pressure over ice (hPa), Murphy & Koop 2005."""
-    return es_ice(T_C) / 100.0
+    """Saturation vapor pressure over ice (hPa), Murphy & Koop 2005 (Pa -> hPa)."""
+    return es_ice(T_C) / _PA_PER_HPA
 
 
 def es_liq_hPa(T_C: np.ndarray) -> np.ndarray:
-    """Saturation vapor pressure over liquid water (hPa), Murphy & Koop 2005."""
+    """Saturation vapor pressure over liquid water (hPa), Murphy & Koop 2005 (Pa -> hPa)."""
     T_K = np.asarray(T_C, dtype=float) + 273.15
     ln_e = (
         54.842763
@@ -142,21 +174,32 @@ def es_liq_hPa(T_C: np.ndarray) -> np.ndarray:
         + np.tanh(0.0415 * (T_K - 218.8))
         * (53.878 - 1331.22 / T_K - 9.44523 * np.log(T_K) + 0.014025 * T_K)
     )
-    return np.exp(ln_e) / 100.0  # Pa → hPa
+    return np.exp(ln_e) / _PA_PER_HPA  # Pa → hPa
 
 
 def qv_from_ppmv(ppmv: np.ndarray) -> np.ndarray:
-    """Water vapor mass mixing ratio (g/kg) from volume mixing ratio (ppmv)."""
-    return np.asarray(ppmv, dtype=float) * _EPSILON * 1e-3
+    """Water vapor mass mixing ratio (g/kg of dry air) from volume mixing ratio (ppmv).
+
+    Exact conversion q_v = 1000 * EPSILON * x / (1 - x), x = ppmv * 1e-6 (mole
+    fraction), identical to ``qv_from_e_P(x * P, P)`` for any P. (Before
+    2026-10-09 this omitted the 1/(1-x) term, ~2% high-bias at 20,000 ppmv.)
+    """
+    x = np.asarray(ppmv, dtype=float) * 1e-6
+    with np.errstate(invalid="ignore", divide="ignore"):
+        return np.where(x < 1.0, 1000.0 * EPSILON * x / (1.0 - x), np.nan)
 
 
 def qv_from_e_P(e_hPa: np.ndarray, P_hPa: np.ndarray) -> np.ndarray:
-    """Water vapor mass mixing ratio (g/kg) from vapor pressure e and total pressure P (both hPa)."""
+    """Water vapor mass mixing ratio (g/kg of dry air) from vapor pressure e and total pressure P.
+
+    e and P must be in the same unit (the pipeline uses hPa); the ratio is
+    dimensionless and the factor 1000 converts kg/kg to g/kg.
+    """
     e = np.asarray(e_hPa, dtype=float)
     P = np.asarray(P_hPa, dtype=float)
     denom = P - e
     with np.errstate(invalid="ignore", divide="ignore"):
-        r = np.where((denom > 0) & np.isfinite(e) & np.isfinite(P), _EPSILON * e / denom, np.nan)
+        r = np.where((denom > 0) & np.isfinite(e) & np.isfinite(P), EPSILON * e / denom, np.nan)
     return r * 1000.0
 
 

@@ -36,10 +36,13 @@ Instrument diagnostics (see test_iphex.py, logs/diagnostics/iphex_diagnostics.js
 
 Si derivation
 -------------
-Uses the notebook-validated Tetens formula:
-    e  = 6.112 * exp(22.46 * Tf / (272.62 + Tf))
-    ei = 6.112 * exp(22.46 * Ta / (272.62 + Ta))
-    Si = e / ei - 1
+Uses the dataset-wide Murphy & Koop (2005) saturation vapor pressure over
+ice (parsers/utils.py::es_ice_hPa, hPa) -- the same basis as every other
+campaign (before 2026-10-09 IPHEX used a Tetens fit, <=1.3% different in e_s
+down to -85 degC, while its qv already used Murphy & Koop):
+    e  = es_ice(Tf)                      (frost point, chilled mirror)
+    e  = ppmv * 1e-6 * P_hPa             (Ophir TDL, e and P in hPa)
+    Si = e / es_ice(Ta) - 1
 """
 
 from __future__ import annotations
@@ -87,14 +90,16 @@ _TDL_PPMV_MIN: float = 1.0
 _TDL_PPMV_MAX: float = 50_000.0
 
 
-def _es_ice_tetens(temp_c: pd.Series) -> pd.Series:
+def _es_ice_mk_hPa(temp_c: pd.Series) -> pd.Series:
+    """Murphy & Koop (2005) saturation vapor pressure over ice, hPa."""
     t = pd.to_numeric(temp_c, errors="coerce")
-    return 6.112 * np.exp((22.46 * t) / (272.62 + t))
+    with np.errstate(invalid="ignore", divide="ignore", over="ignore"):
+        return pd.Series(es_ice_hPa(t.to_numpy(dtype=float)), index=t.index)
 
 
 def _compute_si_from_frostpoint(frost_point_c: pd.Series, air_temp_c: pd.Series) -> pd.Series:
-    e = _es_ice_tetens(frost_point_c)
-    ei = _es_ice_tetens(air_temp_c)
+    e = _es_ice_mk_hPa(frost_point_c)
+    ei = _es_ice_mk_hPa(air_temp_c)
     si = (e / ei) - 1.0
     si[~np.isfinite(si)] = np.nan
     return si
@@ -103,7 +108,7 @@ def _compute_si_from_frostpoint(frost_point_c: pd.Series, air_temp_c: pd.Series)
 def _compute_si_from_ppmv(
     ppmv: pd.Series, air_temp_c: pd.Series, pressure_hpa: pd.Series
 ) -> pd.Series:
-    ei = _es_ice_tetens(air_temp_c)
+    ei = _es_ice_mk_hPa(air_temp_c)
     e = (ppmv / 1e6) * pressure_hpa
     si = e / ei - 1.0
     si[~np.isfinite(si)] = np.nan

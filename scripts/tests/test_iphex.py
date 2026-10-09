@@ -72,7 +72,10 @@ def _flight_label(filepath: Path) -> str:
 
 
 def _es_ice_tetens(temp_c: np.ndarray) -> np.ndarray:
-    return 6.112 * np.exp((22.46 * temp_c) / (272.62 + temp_c))
+    """Reference e_s over ice (hPa). Name kept for the call sites below; since
+    2026-10-09 this is Murphy & Koop (2005), the dataset-wide basis, not Tetens."""
+    from parsers.utils import es_ice_hPa
+    return es_ice_hPa(np.asarray(temp_c, dtype=float))
 
 
 def _si_from_frost_point(fp_c: np.ndarray, t_c: np.ndarray) -> np.ndarray:
