@@ -18,6 +18,23 @@ for per-investigation root-cause writeups.
 
 ---
 
+## 2026-10-09 — One Murphy & Koop e_s basis for every Si path; exact ppmv→q_v; QC5 definition fix
+
+**See:** `docs/decisions/2026-10-09-si-bound-and-thermo-basis.md`,
+`docs/reports/2026-10-09-qc-and-thermo-audit.md`.
+**Campaigns:** 15. **Schema:** no change. **Rows:** L0 4,572,601, L1 2,997,443, L2 1,828,034 —
+all unchanged; CPI fusion % unchanged; COCPIT join counts unchanged.
+
+`si_from_ppmv` (ATTREX, MACPEX, CRYSTAL-FACE-NASA, ICE-L), POSIDON and IPHEX had used a
+Tetens/Magnus saturation vapor pressure over ice; all now use Murphy & Koop (2005)
+(`es_ice_hPa`), as the frost-point/RH paths already did (≤1.3% in e_s at −85 °C). `qv_from_ppmv`
+now includes the 1/(1−x) term (exact mixing ratio). Values changed, not rows: Si median |Δ| 0
+(max 0.038, ATTREX), qv max 0.72 g/kg (POSIDON). QC2 80,593 → 80,662 (also from `0.622 →
+0.62197` in the QC), QC9 1,436 → 1,422, QC5 "campaigns affected" 5 → 0 (now counts flagged
+campaigns, not compared ones). `00_qaqc_summary.csv` gains a `flag_unit` column.
+
+---
+
 ## 2026-10-09 — Timestamp snapping changed from floor to half-up nearest-second rounding
 
 **See:** `docs/decisions/2026-10-09-half-up-timestamp-rounding.md` and

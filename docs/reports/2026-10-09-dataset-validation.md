@@ -10,6 +10,14 @@ code change is the rounding rule, so some counts are expected to move. The basel
 is the 2026-09-21 build (floor, uniform Si bound), kept at hand during the rebuild.
 The question this report answers: did *only* the expected things move, and by how much?
 
+> **Addendum (later 2026-10-09):** after this validation, all Si paths were moved to one Murphy & Koop
+> saturation-vapor-pressure basis, `qv_from_ppmv` was made exact, and QC5's "campaigns affected" was
+> redefined (`docs/decisions/2026-10-09-si-bound-and-thermo-basis.md`,
+> `docs/reports/2026-10-09-qc-and-thermo-audit.md`). Row counts, L1/L2, CPI fusion % and COCPIT matching below
+> are unchanged; Si/Sw/qv values shift slightly (Si max |Δ| 0.038), QC2 is 80,662 (was 80,593), QC9 is 1,422
+> (was 1,436), QC5 is 0 flags / 0 campaigns. The availability percentages below are unchanged at 0.1-point
+> resolution (best-instrument Si non-NaN +3 rows overall).
+
 ## Reproduce
 
 ```bash

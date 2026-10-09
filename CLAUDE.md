@@ -91,6 +91,9 @@ final column list — supersedes the wider list in
 ## Conventions
 
 - Temperature in **Celsius** (`Tair_C`), pressure in **hPa**, altitude in **meters**
+- **Vapor-pressure units**: Murphy & Koop `es_ice()` returns **Pa**; everything else (`es_ice_hPa`,
+  `es_liq_hPa`, `e`, `P_hPa`) is hPa. All Si/qv paths use the one Murphy & Koop e_s (no Magnus/Tetens);
+  q_v = 1000·ε·e/(P−e) g/kg of dry air. Unit table: `parsers/utils.py` header comment
 - All timestamps UTC (`tz_localize("UTC")` or `tz_convert("UTC")`)
 - Si = ice supersaturation (dimensionless); Sw = liquid supersaturation; qv in g/kg
 - Fill values → NaN before returning from `load_*()`, not after
@@ -130,7 +133,9 @@ checks, CPI fusion %) from current code on 2026-08-28, see
 `docs/reports/2026-08-28-dataset-validation.md`; rebuilt 2026-09-21 with the uniform Si bound (row counts and
 CPI fusion % unchanged; QC1 6→4, QC2 80,648→80,608 — see `docs/dataset-changelog.md`); rebuilt 2026-10-09 with
 half-up timestamp rounding instead of floor (L0 4,572,581→4,572,601, L1 2,997,447→2,997,443, L2 1,828,818→1,828,034;
-QC7 unchanged at 2 — see `docs/reports/2026-10-09-half-up-rounding-rebuild.md`). CPI/env fusion 93.7%
+QC7 unchanged at 2 — see `docs/reports/2026-10-09-half-up-rounding-rebuild.md`). Later the same day every Si path was moved to one
+Murphy & Koop e_s basis and ppmv→q_v made exact (values shift, rows/L1/L2 unchanged; QC2 80,662, QC9 1,422, QC5
+now 0 flags / 0 campaigns — see `docs/decisions/2026-10-09-si-bound-and-thermo-basis.md`). CPI/env fusion 93.7%
 matched overall (57.1% with both Tair_C and Si) — run
 `python scripts/diagnose_cpi_fusion.py` for the full per-campaign breakdown. Key
 open items:
@@ -150,7 +155,7 @@ open items:
   `docs/decisions/2026-07-07-cpi-env-unmatched-images-investigation.md` (supersedes
   the narrower `2026-07-05-arm-cpi-timestamp-investigation.md` in scope, though that
   doc's ARM-specific archive-completeness check is still the source of truth for ARM).
-- **IPHEX/OLYMPEX cold-regime Si flags** (1,391 / 45 rows, IPHEX 2014-06-13 + 2014-05-19
+- **IPHEX/OLYMPEX cold-regime Si flags** (L0 only — none reach L1/L2; 1,377 / 45 rows after the 2026-10-09 rebuild; was 1,391 / 45, IPHEX 2014-06-13 + 2014-05-19
   flights and OLYMPEX 15_39_28 flight): chilled-mirror hysteresis at extreme cold can
   amplify small errors into large fractional Si swings, but Si up to ~1.5-1.7 is also
   physically documented for real cirrus near the homogeneous-freezing threshold — kept
